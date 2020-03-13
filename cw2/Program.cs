@@ -9,13 +9,37 @@ namespace cw2
     {
         static void Main(string[] args)
         {
-            var path = @"dane.csv";
+            var pathIn = @"data.csv";
+            var pathOut = @"result.xml";
+            var fileExt = "xml";
 
-            var lines = File.ReadLines(path);
+            try
+            {
+                pathIn = args[0];
+                pathOut = args[1];
+                fileExt = args[2];
+            }
+            catch (IndexOutOfRangeException e)
+            {
+
+                Console.WriteLine(e);
+            }
+
+            IEnumerable<string> lines = new List<string>();
+            try
+            {
+                lines = File.ReadLines(pathIn);
+            }catch(FileNotFoundException e)
+            {
+                Log(e.Message);
+                throw new FileNotFoundException("Plik o tej nazwie nie istnieje");
+            }
 
             var today = DateTime.Today;
             var students = new HashSet<Student>(new OwnComparer());
             var activeStudies = new List<Course>();
+
+            bool shouldAddToSet = true;
 
             foreach (var line in lines)
             {
@@ -25,19 +49,31 @@ namespace cw2
                     Log(line);
                     break;
                 }
-                Student std = new Student
-                {
-                    FName = studentData[0],
-                    LName = studentData[1],
-                    Studies = new Studies { TypeOfStudies = studentData[2] , ModeOfStudies = studentData[3] },
-                    Index = Int32.Parse(studentData[4]),
-                    BirthDate = Convert.ToDateTime(studentData[5]),
-                    Email = studentData[6],
-                    MothersName = studentData[7],
-                    FathersName = studentData[8]
-                };
 
-                students.Add(std);
+                foreach(var data in studentData)
+                {
+                    if(string.IsNullOrEmpty(data))
+                    {
+                        shouldAddToSet = false;
+                        break;
+                    }
+                }
+                if (shouldAddToSet)
+                {
+                    Student std = new Student
+                    {
+                        FName = studentData[0],
+                        LName = studentData[1],
+                        Studies = new Studies { TypeOfStudies = studentData[2], ModeOfStudies = studentData[3] },
+                        Index = Int32.Parse(studentData[4]),
+                        BirthDate = Convert.ToDateTime(studentData[5]),
+                        Email = studentData[6],
+                        MothersName = studentData[7],
+                        FathersName = studentData[8]
+                    };
+
+                    students.Add(std);
+                }
             }
 
             foreach(var student in students)
@@ -62,9 +98,17 @@ namespace cw2
                 activeStudies = activeStudies
             };
 
-            FileStream writer = new FileStream(@"data.xml", FileMode.Create); 
-            XmlSerializer serializer = new XmlSerializer(typeof(Uczelnia)); 
-            serializer.Serialize(writer, uczelnia);
+            try
+            {
+                FileStream writer = new FileStream(pathOut, FileMode.Create);
+                XmlSerializer serializer = new XmlSerializer(typeof(Uczelnia));
+                serializer.Serialize(writer, uczelnia);
+            }
+            catch(IOException e)
+            {
+                Log(e.Message);
+                throw new ArgumentException("Podana ścieżka jest niepoprawna");
+            }
 
         }
 
@@ -73,8 +117,6 @@ namespace cw2
             using (StreamWriter sw = File.CreateText("log.txt"))
             {
                 sw.WriteLine(txt);
-
-                Console.WriteLine(txt);
             }
         }
     }

@@ -2,7 +2,7 @@
   "profiles": {
     "cw2": {
       "commandName": "Project",
-      "commandLineArgs": "data.csv result.xml xml"
+      "commandLineArgs": "dane.csv result.xml xml"
     }
   }
 }
