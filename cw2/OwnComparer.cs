@@ -10,12 +10,14 @@ namespace cw2
         {
             return StringComparer
                 .InvariantCultureIgnoreCase
-                .Equals($"", $"");
+                .Equals($"{x.FName} {x.LName} {x.Index}", $"{y.FName} {y.LName} {y.Index}");
         }
 
         public int GetHashCode(Student obj)
         {
-            throw new NotImplementedException();
+            return StringComparer
+                .OrdinalIgnoreCase
+                .GetHashCode($"{obj.FName} {obj.LName} {obj.Index}");
         }
     }
 }
